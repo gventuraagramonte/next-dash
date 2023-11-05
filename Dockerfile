@@ -1,27 +1,35 @@
-FROM node:19-alpine3.15 as dev-deps
-WORKDIR /app
-COPY package.json package.json
-RUN yarn install --frozen-lockfile
+# Build step
+FROM node:18 AS build
 
-
-FROM node:19-alpine3.15 as builder
 WORKDIR /app
-COPY --from=dev-deps /app/node_modules ./node_modules
+
+# Copiar el archivo package json y lock para aprovechar el cache
+COPY package*.json ./
+
+# Instalamos las dependencias
+RUN npm install
+
+# Copiamos el resto de archivos
 COPY . .
-# RUN yarn test
-RUN yarn build
 
-FROM node:19-alpine3.15 as prod-deps
+# Generamos los archivos estaticos
+RUN npm run build
+
+# Prod step
+FROM node:18 AS production
+
 WORKDIR /app
-COPY package.json package.json
-RUN yarn install --prod --frozen-lockfile
 
+#Copiamos los archivos necesarios
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
 
-FROM node:19-alpine3.15 as prod
+# Instalamos las dependencias de prod
+RUN npm install --only=production
+
+# Exponer el puerto
 EXPOSE 3000
-WORKDIR /app
-ENV APP_VERSION=${APP_VERSION}
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
 
-CMD [ "node","dist/main.js"]
+# Iniciamos la app
+CMD [ "npm","start" ]
