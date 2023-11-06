@@ -30,8 +30,10 @@ jobs:
     - name: Build Docker Image
       run: |
         docker build -t giorgio0603/next-dash:0.0.1 .
+        docker build -t giorgio0603/next-dash:latest .
 
     - name: Push Docker Image
       run: |
         docker push giorgio0603/next-dash:0.0.1
+        docker push giorgio0603/next-dash:latest
       
