@@ -33,5 +33,5 @@ jobs:
 
     - name: Push Docker Image
       run: |
-        docker push giorgio0603/next-dash:0.0.1 .
+        docker push giorgio0603/next-dash:0.0.1
       
